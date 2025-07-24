@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+ frontend:
+   build: 
+     context: ./frontend
+     dockerfile: Dockerfile
+   ports:
+     - "3030:3000"
+   depends_on:
+     - backend
+   environment:
+     - NODE_ENV=production
+     - VITE_API_URL=http://backend:5000
+   mem_limit: 60m
+   mem_reservation: 40m
+   restart: unless-stopped
+
+ backend:
+   build: ./backend
+   ports:
+     - "3031:5000"
+   environment:
+     - NODE_ENV=production
+     - PORT=5000
+     - JWT_SECRET=vaibhav_gym_super_secret_2024
+     - DB_HOST=postgres
+     - DB_NAME=vaibhav_gym
+     - DB_USER=postgres
+     - DB_PASS=gym_secure_2024
+   depends_on:
+     - postgres
+   mem_limit: 100m
+   mem_reservation: 60m
+   restart: unless-stopped
+
+ postgres:
+   image: postgres:15-alpine
+   environment:
+     - POSTGRES_DB=vaibhav_gym
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=gym_secure_2024
+   volumes:
+     - gym_db:/var/lib/postgresql/data
+   ports:
+     - "5435:5432"
+   mem_limit: 200m
+   mem_reservation: 100m
+   restart: unless-stopped
+   command: >
+     postgres
+     -c shared_buffers=48MB
+     -c effective_cache_size=96MB
+     -c maintenance_work_mem=24MB
+     -c work_mem=4MB
+
+volumes:
+ gym_db:
